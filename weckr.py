@@ -1,5 +1,6 @@
 import click as c
 import time as t
+import vlc
 from datetime import datetime
 
 
@@ -47,3 +48,8 @@ def weckr(time, sound):
     t.sleep((hh * 60 + mm) * 60 - now.second)
 
     c.echo('WAKE UP!')
+    
+    p = vlc.MediaPlayer('file://' + sound)
+    p.play()
+
+    input("Press ENTER to stop me...")
