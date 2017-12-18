@@ -6,6 +6,8 @@ setup(
     py_modules=['weckr'],
     install_requires=[
         'Click',
+        'python-vlc',
+        'python-dateutil'
     ],
     entry_points='''
         [console_scripts]
