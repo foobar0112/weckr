@@ -47,17 +47,17 @@ def validate_news_time(ctx, param, val: int) -> int:
             type=c.Path(exists=True, resolve_path=True))
 @c.option('-t', '--time',
           prompt='Alarm time',
-          help='alarm time (hh:mm)',
+          help='Takes alarm time (h:m).',
           callback=validate_time)
 @c.option('-n', '--news',
-          help='includes latest DLF news (5 minutes delay)',
+          help='Includes latest DLF news (default: 5 min delay).',
           is_flag=True)
 @c.option('-N', '--news-time',
-          help='includes latest DLF news with specific time delay (in minutes)',
+          help='Includes latest DLF news with specific time delay (in min).',
           type=int,
           callback=validate_news_time)
 @c.option('-v', '--verbose',
-          help='toggles verbose mode',
+          help='Toggles verbose mode.',
           is_flag=True)
 def weckr(sound_file: str, time: (int, int), news: bool, news_time: int, verbose: bool) -> None:
     """
