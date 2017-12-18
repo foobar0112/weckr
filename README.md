@@ -30,7 +30,7 @@ To exit virtualenv run `deactivate`.
 $ [sudo] pip3 install .
 ```
 
-You now can use your weckr (in your virtualenv) simply with `weckr SOUND_FILE`. \o/
+You now can use your weckr (in your virtualenv) simply with `weckr path/to/nice/technomix -t 8:00 -N 10`. \o/Wich will wake You up at 8 o'clock playing a nice techno mix and the latest [DLF news](http://www.deutschlandfunk.de) 10 minutes later.
 
 
 ## Usage

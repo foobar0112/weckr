@@ -87,13 +87,13 @@ def weckr(sound_file: str, time: (int, int), news: bool, news_time: int, verbose
         for (root, dirs, files) in os.walk(sound_file):
             count = len([f for f in files if os.path.splitext(f)[1][1:] in formats])
             if count == 0:
-                c.echo(c.style('Error:', bold=True, fg='red') +
+                c.echo(c.style('\nError:', bold=True, fg='red') +
                        ' The directory ' + c.style(sound_file, fg='blue') +
                        ' doesn\'t contain any audio files.')
                 exit(1)
             else:
                 num = datetime.now().day % count
-                verb('Chose file number ' + str(num) + ' in directory: ' + c.style(sound_file, fg='blue'))
+                verb('Selected file ' + str(num) + ' in directory: ' + c.style(sound_file, fg='blue'))
                 sound_file = os.sep.join([root, files[num]])
                 ext = get_ext(sound_file)
                 break
@@ -116,30 +116,29 @@ def weckr(sound_file: str, time: (int, int), news: bool, news_time: int, verbose
             hh += 24
 
     # announce sleep
-    c.echo(
-        'I\'ll wake you up at ' + c.style(str(h) + ':' + str(m).zfill(2), bold=True, fg='white') +
-        ' playing ' + c.style(os.path.basename(sound_file), fg='blue') + news_echo + ' in less then ' +
-        c.style(str(hh) + ' h ' + str(mm) + ' min', bold=True, fg='white'))
+    verb('\nI\'ll wake you up at ' + c.style(str(h) + ':' + str(m).zfill(2), bold=True, fg='white') +
+         ' playing ' + c.style(os.path.basename(sound_file), fg='blue') + news_echo + ' in less then ' +
+         c.style(str(hh) + ' h ' + str(mm) + ' min', bold=True, fg='white'))
 
-    verb('Now I\'m going to sleep. You also should do so.')
+    verb('\nNow I\'m going to sleep. You also should do so.')
 
     # finally sleep
     t.sleep((hh * 60 + mm) * 60 - now.second)
 
     # wake up
-    verb('*yawning*')
-    c.echo(c.style('Wake up!!', bold=True, bg='red', fg='white', blink=True))
+    verb('\n*yawning*')
+    c.echo(c.style('\n\nWake up!!\n', bold=True, bg='red', fg='white', blink=True))
 
     # play background sound
     play_sound(sound_file, ext, 60)
 
     # play news if wanted
     if news:
-        verb('Going to play news in ' + c.style(str(news_time), fg='white') + ' min.')
+        verb('\nGoing to play news in ' + c.style(str(news_time), fg='white') + ' min.')
         t.sleep(news_time * 60)
         play_news()
 
-    input("Press ENTER to stop me...")
+    input("\nPress ENTER to stop")
 
 
 def play_sound(sound_path: str, ext: str, fade: int) -> None:
@@ -150,7 +149,7 @@ def play_sound(sound_path: str, ext: str, fade: int) -> None:
     :param fade: time in seconds to fade in sound
     """
     if ext != '':
-        verb('Playing file: ' + c.style(os.path.basename(sound_path), fg='blue'))
+        verb('\nPlaying file: ' + c.style(os.path.basename(sound_path), fg='blue'))
 
         s = vlc.MediaPlayer(sound_path)
         s.play()
@@ -166,6 +165,9 @@ def play_news() -> None:
     fetches DLF news XML and play latest (of full hour) news
     """
     resp = urllib.request.urlopen('http://www.deutschlandfunk.de/podcast-nachrichten.1257.de.podcast.xml')
+
+    verb('\nFetched news XML successfully.')
+
     xml = resp.read().decode('utf-8')
     root = Et.fromstring(xml).find('channel')
     for item in root.findall('item'):
@@ -185,7 +187,7 @@ def get_ext(sound: str) -> str:
     """
     ext = os.path.splitext(sound)[1][1:]
     if ext not in formats:
-        c.echo(c.style('Error:', bold=True, fg='red') +
+        c.echo(c.style('\nError:', bold=True, fg='red') +
                ' The audio file extension ' + c.style(ext, fg='white') +
                ' is not supported. Please use one of these: ' + ', '.join(formats) + '.')
         exit(1)
