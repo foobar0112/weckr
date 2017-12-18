@@ -6,18 +6,18 @@
 
 Please make sure you have installed following dependencies beforehand:
 
-- python3
-- pip
-- setuptools
-- virtualenv (just for development)
+- [python3](https://www.python.org/downloads)
+- [pip](https://pip.pypa.io/en/stable/installing)
+- [setuptools](https://pypi.python.org/pypi/setuptools) (via pip)
+- [virtualenv](https://virtualenv.pypa.io/en/latest/installation) (via pip, just for development)
 
-1. Clone repository:
+(1) clone repository:
 ```
 $ git clone https://github.com/foobar0112/weckr
 $ cd weckr
 ```
 
-2a. For development only: create virtual environment:
+(2a) for development only: create virtual environment:
 ```
 $ virtualenv venv
 $ . venv/bin/activate
@@ -25,12 +25,12 @@ $ pip3 install --editable .
 ```
 To exit virtualenv run `deactivate`.
 
-2b. In production: Install weckr and dependencies (Click, python-vlc, python-dateutil) directly via setuptools:
+(2b) for production: Install dependencies ([Click](http://click.pocoo.org/6), [python-vlc](https://pypi.python.org/pypi/python-vlc), [python-dateutil](https://pypi.python.org/pypi/python-dateutil/2.6.1)) and weckr directly via setuptools:
 ```
-$ sudo pip3 install --editable .
+$ [sudo] pip3 install .
 ```
 
-You now can use your weckr (in your virtualenv) simply with `weckr SOUND_FILE`, enjoy.
+You now can use your weckr (in your virtualenv) simply with `weckr SOUND_FILE`. \o/
 
 
 ## Usage
@@ -51,10 +51,11 @@ Options:
 
 ## Update
 
-Just pull the repository:
+Just pull the repository and run setuptools:
 ```
 $ cd weckr
 $ git pull
+$ [sudo] pip3 install .
 ```
 
 

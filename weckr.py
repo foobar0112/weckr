@@ -124,7 +124,7 @@ def weckr(sound_file: str, time: (int, int), news: bool, news_time: int, verbose
     verb('Now I\'m going to sleep. You also should do so.')
 
     # finally sleep
-    # t.sleep((hh * 60 + mm) * 60 - now.second)
+    t.sleep((hh * 60 + mm) * 60 - now.second)
 
     # wake up
     verb('*yawning*')
@@ -172,6 +172,7 @@ def play_news() -> None:
         if parse(item.find('pubDate').text).time().minute == 0:
             news_url = item.find('link').text
             n = vlc.MediaPlayer(news_url)
+            n.audio_set_volume(100)
             n.play()
             break
 
