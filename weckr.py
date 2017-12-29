@@ -4,7 +4,7 @@ import time as t
 import vlc
 import xml.etree.ElementTree as Et
 import urllib.request
-from datetime import datetime
+import datetime
 from dateutil.parser import parse
 
 v = False
@@ -99,31 +99,24 @@ def weckr(sound_file: str, time: (int, int), news: bool, news_time: int, verbose
                 break
 
     # compute sleep
-    h = time[0]
-    m = time[1]
+    h, m = time
 
-    now = datetime.now()
-    hh = h - now.hour
-    mm = m - now.minute
-
-    if mm == 0 and hh == 0:
-        hh = 24
-    else:
-        if mm < 0:
-            mm += 60
-            hh -= 1
-        if hh < 0:
-            hh += 24
+    now = datetime.datetime.now()
+    time = datetime.time(h, m, 0)
+    alarm_time = datetime.datetime.combine(now.date(), time)
+    if alarm_time < now:
+        alarm_time += datetime.timedelta(days=1)
+    delta = alarm_time - now
 
     # announce sleep
     verb('\nI\'ll wake you up at ' + c.style(str(h) + ':' + str(m).zfill(2), bold=True, fg='white') +
          ' playing ' + c.style(os.path.basename(sound_file), fg='blue') + news_echo + ' in less then ' +
-         c.style(str(hh) + ' h ' + str(mm) + ' min', bold=True, fg='white'))
+         c.style(str(delta.seconds//3600) + ' h ' + str((delta.seconds//60)%60) + ' min', bold=True, fg='white'))
 
     verb('\nNow I\'m going to sleep. You also should do so.')
 
     # finally sleep
-    t.sleep((hh * 60 + mm) * 60 - now.second)
+    t.sleep(delta.total_seconds())
 
     # wake up
     verb('\n*yawning*')
