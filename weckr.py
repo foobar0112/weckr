@@ -30,9 +30,7 @@ def weckr(sound_file: str, wakeup_time: datetime.time, news: bool, news_time: in
 
     # check if sound_file is playable
     test_vlc = vlc.MediaPlayer(sound_file)
-    media = test_vlc.get_media()
-    media.parse()
-    if not media.get_duration():
+    if test_vlc.will_play():
         log.error("Media file is not playable")
         sys.exit(2)
 
