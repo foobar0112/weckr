@@ -10,8 +10,6 @@ import xml.etree.ElementTree as Et
 import urllib.request
 from dateutil.parser import parse
 
-formats = ['mp3', 'wav', 'opus', 'wma', 'ogg']
-
 
 def weckr(sound_file: str, wakeup_time: datetime.time, news: bool, news_time: int, music_fade: int,
           music_max: int) -> None:
@@ -30,7 +28,13 @@ def weckr(sound_file: str, wakeup_time: datetime.time, news: bool, news_time: in
         # if v:
         news_echo += ' after ' + str(news_time) + ' min'
 
-    # TODO check if sound_file is playable
+    # check if sound_file is playable
+    test_vlc = vlc.MediaPlayer(sound_file)
+    media = test_vlc.get_media()
+    media.parse()
+    if not media.get_duration():
+        log.error("Media file is not playable")
+        sys.exit(2)
 
     # compute sleep
     now = datetime.datetime.now()
@@ -114,20 +118,6 @@ def play_news(news_fade: int, music_volume: int, music_max: int) -> None:
                     time.sleep(news_fade / 100)
                     log.info('Increasing volume to: ' + str(vol) + '%')
             break
-
-
-def get_ext(sound: str) -> None:
-    """
-    gets files extension if valid
-    :param sound:
-    :return:
-    """
-    ext = os.path.splitext(sound)[1][1:]
-    if ext not in formats:
-        log.warning('Error:' +
-                    ' The audio file extension ' + ext +
-                    ' is not supported. Please use one of these: ' + ', '.join(formats) + '.')
-        exit(1)
 
 
 def main():
