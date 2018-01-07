@@ -1,4 +1,3 @@
-# weckr
 <p align="center">
   <img src="https://raw.githubusercontent.com/foobar0112/weckr/master/header.png" alt="Weckr Header"/>
 </p>
@@ -29,7 +28,7 @@ $ pip3 install --editable .
 ```
 To exit virtualenv run `deactivate`.
 
-(2b) for production: Install dependencies ([Click](http://click.pocoo.org/6), [python-vlc](https://pypi.python.org/pypi/python-vlc), [python-dateutil](https://pypi.python.org/pypi/python-dateutil/2.6.1)) and weckr directly via setuptools:
+(2b) for production: Install dependencies ([python-vlc](https://pypi.python.org/pypi/python-vlc), [python-dateutil](https://pypi.python.org/pypi/python-dateutil/2.6.1)) and weckr directly via setuptools:
 ```
 $ [sudo] pip3 install .
 ```
