@@ -10,41 +10,36 @@ import xml.etree.ElementTree as Et
 import urllib.request
 from dateutil.parser import parse
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
-def weckr(sound_file: str, wakeup_time: datetime.time, news: bool, news_time: int, music_fade: int,
+
+def weckr(sound_file: str, wakeup_time: datetime.time, news_time: int, music_fade: int,
           music_max: int) -> None:
     """
     command line alarm clock takes audio file or directory of audio files
     """
 
-    if news_time is not None:
-        news = True
-    else:
-        news_time = 5
-
     news_echo = ''
-    if news:
-        news_echo = ' and the ' + 'news'
-        # if v:
-        news_echo += ' after ' + str(news_time) + ' min'
+    if news_time:
+        news_echo = ' and the ' + 'news' + ' after ' + str(news_time) + ' min'
 
-    # check if sound_file is playable
-    test_vlc = vlc.MediaPlayer(sound_file)
-    if test_vlc.will_play():
-        log.error("Media file is not playable")
-        sys.exit(2)
+    check_media(sound_file)
 
     # compute sleep
-    now = datetime.datetime.now()
-    alarm_time = datetime.datetime.combine(now.date(), wakeup_time)
-    if alarm_time < now:
-        alarm_time += datetime.timedelta(days=1)
-    delta = alarm_time - now
+    delta = get_time_delta(wakeup_time)
 
     # announce sleep
-    log.debug('I\'ll wake you up at ' + str(alarm_time.hour) + ':' + str(alarm_time.minute).zfill(2) +
-              ' playing ' + os.path.basename(sound_file) + news_echo + ' in less then ' +
-              str(delta.seconds // 3600) + ' h ' + str((delta.seconds // 60) % 60 + 1) + ' min')
+    log.debug('I\'ll wake you up at ' + str(wakeup_time.hour) + ':' + str(wakeup_time.minute).zfill(2) +
+              ' playing ' + bcolors.BOLD + os.path.basename(sound_file) + bcolors.ENDC + news_echo + ' in less then ' +
+              bcolors.WARNING + str(delta.seconds // 3600) + ' h ' + str((delta.seconds // 60) % 60 + 1) + ' min' + bcolors.ENDC)
 
     log.info('Now I\'m going to sleep. You also should do so.')
 
@@ -53,13 +48,13 @@ def weckr(sound_file: str, wakeup_time: datetime.time, news: bool, news_time: in
 
     # wake up
     log.info('*yawning*')
-    log.debug('Wake up!!')
+    log.debug(bcolors.FAIL + 'Wake up!!' + bcolors.ENDC)
 
     # play background sound
     play_sound(sound_file, music_fade, music_max)
 
     # play news if wanted
-    if news:
+    if news_time:
         log.info('Going to play news in ' + str(news_time) + ' min.')
         time.sleep(news_time * 60 - 5)
         play_news(5, 40, music_max)
@@ -82,7 +77,7 @@ def play_sound(sound_path: str, music_fade: int, music_max: int) -> None:
 
     for vol in range(0, music_max):
         vlc_music.audio_set_volume(vol)
-        time.sleep(music_fade / 100)
+        time.sleep(music_fade / 100.0)
         log.info('Increasing volume to: ' + str(vol) + '%')
 
 
@@ -118,10 +113,41 @@ def play_news(news_fade: int, music_volume: int, music_max: int) -> None:
             break
 
 
-def main():
+def get_time_delta(wakeup_time: datetime.time):
+    """
+    computes how long to wait till wake up
+    :return: datetime.timedelta
+    """
+    now = datetime.datetime.now()
+    alarm_time = datetime.datetime.combine(now.date(), wakeup_time)
+    if alarm_time < now:
+        alarm_time += datetime.timedelta(days=1)
+    return alarm_time - now
+
+
+def check_media(sound_file: str):
+    """
+    check if sound_file is playable
+    :param sound_file:
+    :return:
+    """
+    test_vlc = vlc.MediaPlayer(sound_file)
+    if test_vlc.will_play():
+        log.error("Media file is not playable")
+        sys.exit(2)
+
+
+def init_log():
     global log
     log = logging.getLogger(__name__)
 
+    output = logging.StreamHandler()
+    output_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    output.setFormatter(output_formatter)
+    log.addHandler(output)
+
+
+def init_parser():
     parser = argparse.ArgumentParser(description="weckr: a CLI alarm clock with unicorn features ")
     parser.add_argument("-v", "--verbose", dest="verbose_count",
                         action="count", default=0,
@@ -140,35 +166,39 @@ def main():
     parser.add_argument("-m",
                         "--max-volume",
                         help="set the maximum volume of music",
-                        type=lambda n: int(n) if int(n) > 0 and int(n) < 100 else 50)
+                        type=lambda n: int(n) if int(n) > 0 and int(n) < 100 else 100)
     parser.add_argument("-f",
                         "--fade-time",
                         help="time the music is fading",
                         type=lambda n: int(n) if int(n) > 0 else 30)
     parser.add_argument('sound_file',
                         type=str)
-
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)
 
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    # handler = logging.FileHandler('weckr.log')
-    # handler.setLevel(logging.INFO)
-    # formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    # handler.setFormatter(formatter)
-    # log.addHandler(handler)
 
-    output = logging.StreamHandler()
-    output_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    output.setFormatter(output_formatter)
-    log.addHandler(output)
+def main():
+    init_log()
+    args = init_parser()
 
     log.setLevel(max(3 - args.verbose_count, 0) * 10)
 
+    if args.max_volume is None:
+        args.max_volume = 100
+
+    if args.fade_time is None:
+        args.fade_time = 30
+
+    if not args.news:
+        args.news_time = None
+    elif args.news and args.news_time is None:
+        args.news_time = 5
+
     try:
-        weckr(args.sound_file, args.time, args.news, args.news_time, args.fade_time, args.max_volume)
+        weckr(args.sound_file, args.time, args.news_time, args.fade_time, args.max_volume)
     except KeyboardInterrupt:
         log.debug("Exiting by interrupt")
 
