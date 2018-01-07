@@ -179,7 +179,10 @@ def main():
 
     log.setLevel(max(3 - args.verbose_count, 0) * 10)
 
-    weckr(args.sound_file, args.time, args.news, args.news_time, args.fade_time, args.max_volume)
+    try:
+        weckr(args.sound_file, args.time, args.news, args.news_time, args.fade_time, args.max_volume)
+    except KeyboardInterrupt:
+        log.debug("Exiting by interrupt")
 
 
 if __name__ == "__main__":
