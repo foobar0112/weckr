@@ -1,4 +1,8 @@
 # weckr
+<p align="center">
+  <img src="https://raw.githubusercontent.com/foobar0112/weckr/master/header.png" alt="Weckr Header"/>
+</p>
+
 *A CLI alarm clock* — still under development
 
 
