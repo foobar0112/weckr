@@ -27,9 +27,9 @@ def weckr(sound_file: str, wakeup_time: datetime.time, news_time: int, music_fad
     command line alarm clock takes audio file or directory of audio files
     """
 
-    news_echo = ''
+    news_echo = '.'
     if news_time:
-        news_echo = ' and the ' + 'news' + ' after ' + str(news_time) + ' min'
+        news_echo = ' and the ' + 'news' + ' after ' + str(news_time) + ' min.'
 
     check_media(sound_file)
 
@@ -37,9 +37,15 @@ def weckr(sound_file: str, wakeup_time: datetime.time, news_time: int, music_fad
     delta = get_time_delta(wakeup_time)
 
     # announce sleep
-    log.debug('I\'ll wake you up at ' + str(wakeup_time.hour) + ':' + str(wakeup_time.minute).zfill(2) +
-              ' playing ' + bcolors.BOLD + os.path.basename(sound_file) + bcolors.ENDC + news_echo + ' in less then ' +
-              bcolors.WARNING + str(delta.seconds // 3600) + ' h ' + str((delta.seconds // 60) % 60 + 1) + ' min' + bcolors.ENDC)
+    sleep_echo = 'I\'ll wake you up '
+    if wakeup_time == 'now':
+        sleep_echo += 'now'
+    else: 
+        sleep_echo += 'at ' + str(wakeup_time.hour) + ':' + str(wakeup_time.minute).zfill(2) + ' in less then ' + bcolors.WARNING + str(delta.seconds // 3600) + ' h ' + str((delta.seconds // 60) % 60 + 1) + ' min' + bcolors.ENDC
+              
+    sleep_echo += ' playing ' + bcolors.BOLD + os.path.basename(sound_file) + bcolors.ENDC + news_echo
+    
+    log.debug(sleep_echo)
 
     log.info('Now I\'m going to sleep. You also should do so.')
 
@@ -57,7 +63,9 @@ def weckr(sound_file: str, wakeup_time: datetime.time, news_time: int, music_fad
     if news_time:
         log.info('Going to play news in ' + str(news_time) + ' min.')
         time.sleep(news_time * 60 - 5)
-        play_news(5, 40, music_max)
+        play_news(10, 40, music_max)
+    else:
+        log.info('No news will be played.')
 
     input("\nPress ENTER to stop")
 
@@ -77,8 +85,8 @@ def play_sound(sound_path: str, music_fade: int, music_max: int) -> None:
 
     for vol in range(0, music_max):
         vlc_music.audio_set_volume(vol)
-        time.sleep(music_fade / 100.0)
-        log.info('Increasing volume to: ' + str(vol) + '%')
+        time.sleep(music_fade * 60 / 100)
+        log.debug('Increasing volume to: ' + str(vol) + '%')
 
 
 def play_news(news_fade: int, music_volume: int, music_max: int) -> None:
@@ -119,6 +127,8 @@ def get_time_delta(wakeup_time: datetime.time):
     :return: datetime.timedelta
     """
     now = datetime.datetime.now()
+    if wakeup_time == 'now':
+        return now - now
     alarm_time = datetime.datetime.combine(now.date(), wakeup_time)
     if alarm_time < now:
         alarm_time += datetime.timedelta(days=1)
@@ -156,7 +166,7 @@ def init_parser():
                         "--time",
                         help="Alarm time",
                         required=True,
-                        type=lambda d: datetime.datetime.strptime(d, '%H:%M').time())
+                        type=lambda d: datetime.datetime.strptime(d, '%H:%M').time() if not d == 'now' else 'now')
     parser.add_argument("-n", "--news", help="Includes latest DLF news (default: 5 min delay).",
                         action="store_true")
     parser.add_argument("-N",
@@ -192,10 +202,9 @@ def main():
     if args.fade_time is None:
         args.fade_time = 30
 
-    if not args.news:
-        args.news_time = None
-    elif args.news and args.news_time is None:
-        args.news_time = 5
+    if not (args.news is False and args.news_time is None):
+        if args.news_time is None:
+            args.news_time = 5
 
     try:
         weckr(args.sound_file, args.time, args.news_time, args.fade_time, args.max_volume)
